@@ -305,10 +305,9 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
     ${testSections.map(
       (item) =>
         `<div>${item.section}
-      <div style="width: 100%,height: 1rem,background: whitesmoke,border-radius: 10px,margin-bottom: 1rem">
+      <div style="width: 100%;height: 1rem;background: whitesmoke;border-radius: 10px;margin-bottom: 1rem;">
         <div
-          className={styles.indicator}
-          style="width: ${item.percentage}% height: 1rem,background:green,border-radius: 10px"
+          style="width: ${item.percentage}%; height: 1rem;background:green;border-radius: 10px;"
         ></div>
       </div></div>`
     )}
