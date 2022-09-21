@@ -25,6 +25,10 @@ router
         select: "name description video",
       },
       {
+        path: "students",
+        select: "firstname lastname email",
+      },
+      {
         path: "section.video",
         select: "name description video",
       },
