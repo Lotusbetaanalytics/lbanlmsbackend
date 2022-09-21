@@ -6,6 +6,8 @@ const Grade = require("../models/Grade");
 const Overview = require("../models/Overview");
 const User = require("../models/User");
 const Log = require("../models/Logs");
+const QuestionCategory = require("../models/QuestionCat");
+const Timer = require("../models/Timer");
 
 // @desc    Create User
 // @route   POST/api/v1/User/
@@ -13,7 +15,7 @@ const Log = require("../models/Logs");
 exports.createTest = asyncHandler(async (req, res, next) => {
   const upload = await ETest.create(req.body);
   await Log.create({
-    user: user,
+    user: req.user.id,
     activity: "Created Test",
   });
   res.status(201).json({
@@ -51,6 +53,11 @@ exports.getTest = asyncHandler(async (req, res, next) => {
     path: "categories.category",
     select: "name instruction time",
   });
+  var now = new Date();
+  now.setMinutes(now.getMinutes() + section?.time); // timestamp
+  now = new Date(now); // Date object
+
+  var time = now.getTime();
   let questions = [];
   for (let i = 0; i < section?.categories?.length; i++) {
     const qst = await Question.find({
@@ -67,10 +74,29 @@ exports.getTest = asyncHandler(async (req, res, next) => {
     user: req.user.id,
     activity: "Started Test",
   });
-  res.status(200).json({
-    success: true,
-    data: questions,
+  const checkTime = await Timer.findOne({
+    user: req.user.id,
+    test: req.params.id,
   });
+
+  if (checkTime) {
+    res.status(200).json({
+      success: true,
+      data: questions,
+      time: checkTime.time,
+    });
+  } else {
+    await Timer.create({
+      user: req.user.id,
+      test: req.params.id,
+      time: time,
+    });
+    res.status(200).json({
+      success: true,
+      data: questions,
+      time: time,
+    });
+  }
 });
 
 exports.gradeUser = asyncHandler(async (req, res, next) => {
@@ -78,6 +104,7 @@ exports.gradeUser = asyncHandler(async (req, res, next) => {
     user: req.user.id,
     test: req.body.test,
   });
+
   const completed = await Overview.findOne({
     user: req.user.id,
     test: req.body.test,
@@ -108,6 +135,7 @@ exports.gradeUser = asyncHandler(async (req, res, next) => {
       score: score,
       question: req.body.question,
       answer: req.body.answer,
+      category: req.body.category,
     };
 
     if (existItem) {
@@ -132,6 +160,7 @@ exports.gradeUser = asyncHandler(async (req, res, next) => {
           score: score,
           question: req.body.question,
           answer: req.body.answer,
+          category: req.body.category,
         },
       ];
       question.push(...update);
@@ -146,7 +175,6 @@ exports.gradeUser = asyncHandler(async (req, res, next) => {
         runValidators: true,
       }
     );
-    console.log(question);
     res.status(200).json({
       success: true,
     });
@@ -158,6 +186,7 @@ exports.gradeUser = asyncHandler(async (req, res, next) => {
         question: req.body.question,
         score: score,
         answer: req.body.answer,
+        category: req.body.category,
       },
     ];
     question.push(...update);
@@ -181,9 +210,27 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
   const percentage = total / cal;
   let status = "";
 
-  // for (let i = 0; i < assignedTest?.categories.length; i++) {
-  //   let sections = sections
-  // }
+  let testSections = [];
+  for (let i = 0; i < assignedTest?.categories.length; i++) {
+    let sections = section?.question.filter(
+      (x) =>
+        x.category.toString() ==
+        assignedTest?.categories[i]?.category.toString()
+    );
+    const sectionTotal = sections.reduce((a, c) => a + c.score, 0);
+    const categoryName = await QuestionCategory.findById(
+      assignedTest?.categories[i]?.category
+    );
+    const sCal = sections.length / 100;
+    const sPercentage = sectionTotal / sCal;
+    const sectionScore = {
+      section: categoryName.name,
+      score: sectionTotal,
+      count: assignedTest?.categories[i]?.count,
+      percentage: sPercentage,
+    };
+    testSections.push(sectionScore);
+  }
 
   if (percentage >= assignedTest.passMark) {
     status = "Pass";
@@ -200,8 +247,9 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
       {
         user: user,
         test: course,
-        score: score,
+        score: Math.round(score),
         status: status,
+        report: testSections,
       },
       {
         new: true,
@@ -212,8 +260,9 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
     await Overview.create({
       user: user,
       test: course,
-      score: score,
+      score: Math.round(score),
       status: status,
+      report: testSections,
     });
   }
 
@@ -248,5 +297,22 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
     data: section,
     percentage,
     status,
+    report: testSections,
+  });
+});
+
+// @desc    Get ALl Courses
+// @route   POST/api/v1/employee
+// @access   Private/Admin
+exports.deleteEtest = asyncHandler(async (req, res, next) => {
+  const section = await ETest.findById(req.params.id);
+  section.remove();
+  await Log.create({
+    user: req.user.id,
+    activity: "Deleted Test",
+  });
+  res.status(200).json({
+    success: true,
+    data: {},
   });
 });

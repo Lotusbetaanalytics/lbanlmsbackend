@@ -23,6 +23,9 @@ const ETestSchema = new mongoose.Schema({
   maxQuestion: {
     type: Number,
   },
+  time: {
+    type: Number,
+  },
   passMark: {
     type: Number,
   },

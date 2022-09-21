@@ -2,6 +2,7 @@ const ErrorResponse = require("../utils/errorResponse");
 const asyncHandler = require("../middleware/async");
 const User = require("../models/User");
 const Log = require("../models/Logs");
+const Course = require("../models/Course");
 const sendEmail = require("../utils/sendEmail");
 const crypto = require("crypto");
 
@@ -221,10 +222,12 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 // @access   Private/Admin
 exports.AssignCourse = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.id);
+  const courses = await Course.findById(req.body.course);
   if (!user) {
     return next(new ErrorResponse("User not found", 404));
   }
   const course = user.assignedCourse;
+  const student = courses.students;
 
   course.push(req.body.course);
 
@@ -238,6 +241,19 @@ exports.AssignCourse = asyncHandler(async (req, res, next) => {
       runValidators: true,
     }
   );
+
+  student.push(req.params.id);
+  const updateCourse = await Course.findByIdAndUpdate(
+    req.body.course,
+    {
+      students: student,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
   await Log.create({
     user: user,
     activity: "was Assigned Course",

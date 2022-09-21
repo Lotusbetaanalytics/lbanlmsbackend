@@ -15,6 +15,7 @@ const OverviewSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  report: { type: Array },
   status: {
     type: String,
   },

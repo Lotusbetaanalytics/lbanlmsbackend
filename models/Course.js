@@ -27,6 +27,12 @@ const CourseSchema = new mongoose.Schema({
       ref: "Section",
     },
   ],
+  students: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+    },
+  ],
   status: {
     type: String,
     required: true,

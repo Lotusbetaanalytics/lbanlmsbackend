@@ -18,6 +18,11 @@ const GradeSchema = new mongoose.Schema({
         ref: "Test",
         required: true,
       },
+      category: {
+        type: mongoose.Schema.ObjectId,
+        ref: "Category",
+        required: true,
+      },
       answer: {
         type: String,
         required: true,
