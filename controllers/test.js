@@ -8,6 +8,7 @@ const User = require("../models/User");
 const Log = require("../models/Logs");
 const QuestionCategory = require("../models/QuestionCat");
 const Timer = require("../models/Timer");
+const sendEmail = require("../utils/sendEmail");
 
 // @desc    Create User
 // @route   POST/api/v1/User/
@@ -292,6 +293,16 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
     }
   );
 
+  const admin = await User.find({ role: "Admin" });
+
+  const emails = [];
+  for (let i = 0; i < admin.length; i++) {
+    emails.push(admin[i].email);
+  }
+  const salutation = `Hello Admin`;
+  const content = `${userInfo.firstname} has completed his test<br /><br />
+    <h3>Score: ${percentage}</h3>
+  `;
   res.status(200).json({
     success: true,
     data: section,
@@ -299,6 +310,17 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
     status,
     report: testSections,
   });
+  try {
+    await sendEmail({
+      email: "obafemi@lotusbetaanalytics.com",
+      subject: "Test Result",
+      salutation,
+      content,
+    });
+  } catch (err) {
+    console.log(err);
+    return next(new ErrorResponse("Email could not be sent", 500));
+  }
 });
 
 // @desc    Get ALl Courses
