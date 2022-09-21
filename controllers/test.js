@@ -312,7 +312,7 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
   });
   try {
     await sendEmail({
-      email: "obafemi@lotusbetaanalytics.com",
+      email: emails,
       subject: "Test Result",
       salutation,
       content,
