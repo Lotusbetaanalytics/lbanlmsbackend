@@ -308,7 +308,7 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
       <div style="width: 100%;height: 1rem;background: whitesmoke;border-radius: 10px;margin-bottom: 1rem;">
         <div
           style="width: ${item.percentage}%; height: 1rem;background:green;border-radius: 10px;"
-        ></div>
+        >${item.percentage}</div>
       </div></div>`
     )}
    

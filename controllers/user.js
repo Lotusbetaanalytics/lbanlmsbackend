@@ -262,6 +262,22 @@ exports.AssignCourse = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
   });
+  const salutation = `Hello ${user.firstname}`;
+  const content = ` A course has be assigned to your learning account<br /><br />
+    )}
+   
+  `;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "New Course",
+      salutation,
+      content,
+    });
+  } catch (err) {
+    console.log(err);
+    return next(new ErrorResponse("Email could not be sent", 500));
+  }
 });
 
 // @desc    Update Employee
@@ -294,4 +310,20 @@ exports.AssignTest = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
   });
+  const salutation = `Hello ${user.firstname}`;
+  const content = ` A Test has be assigned to your learning account<br /><br />
+    )}
+   
+  `;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: "New Test",
+      salutation,
+      content,
+    });
+  } catch (err) {
+    console.log(err);
+    return next(new ErrorResponse("Email could not be sent", 500));
+  }
 });
