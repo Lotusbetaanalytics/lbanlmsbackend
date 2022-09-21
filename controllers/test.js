@@ -301,7 +301,18 @@ exports.getMyResult = asyncHandler(async (req, res, next) => {
   }
   const salutation = `Hello Admin`;
   const content = `${userInfo.firstname} has completed his test<br /><br />
-    <h3>Score: ${percentage}</h3>
+    <h3>Score: ${percentage}%</h3><br />
+    ${testSections.map(
+      (item) =>
+        `<div>${item.section}
+      <div style="width: 100%,height: 1rem,background: whitesmoke,border-radius: 10px,margin-bottom: 1rem">
+        <div
+          className={styles.indicator}
+          style="width: ${item.percentage}% height: 1rem,background:green,border-radius: 10px"
+        ></div>
+      </div></div>`
+    )}
+   
   `;
   res.status(200).json({
     success: true,
